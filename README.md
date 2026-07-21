@@ -1,6 +1,6 @@
 # MedVoice
 
-MedVoice is a real-time medical transcription and clinical summarization tool. A doctor speaks, the audio is transcribed live in the browser, and a single click generates a structured clinical summary (patient info, complaints, symptoms, and clinical impression) using an LLM.
+MedVoice is a real-time medical transcription and clinical summarization tool. A Patient speaks, the audio is transcribed live in the browser, and a single click generates a structured clinical summary (patient info, complaints, symptoms, and clinical impression) using an LLM.
 
 Built as a portfolio project demonstrating a full speech-to-structured-data pipeline: browser audio capture → WebSocket streaming → cloud transcription → LLM-based extraction → UI rendering.
 
