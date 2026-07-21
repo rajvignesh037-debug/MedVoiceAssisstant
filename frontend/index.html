@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MedVoice — Live Medical Transcription</title>
+<style>
+  :root {
+    --accent: #6366f1;
+    --accent-dark: #4f46e5;
+    --red: #ef4444;
+    --green: #16a34a;
+    --border: #e5e7eb;
+    --bg-soft: #f9fafb;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f3f4f6;
+    color: var(--text-primary);
+    padding: 24px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .panel {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .panel h2 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    margin: 0 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  button {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-mic { background: var(--accent); color: #fff; }
+  .btn-mic:hover:not(:disabled) { background: var(--accent-dark); }
+  .btn-stop { background: #fff; color: var(--red); border-color: var(--red); }
+  .btn-clear { background: #fff; color: var(--text-secondary); border-color: var(--border); }
+  .btn-save { background: #fff; color: var(--green); border-color: var(--green); }
+  .btn-outline { background: #fff; color: var(--text-secondary); border-color: var(--border); font-size: 12px; padding: 6px 10px; }
+  .btn-process {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    padding: 12px;
+    font-size: 14px;
+    justify-content: center;
+    margin-top: 14px;
+  }
+  .btn-process:hover:not(:disabled) { background: var(--accent-dark); }
+
+  /* Stat pills */
+  .stat-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .stat-pill {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  /* Transcript boxes */
+  .box {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    min-height: 60px;
+    margin-bottom: 12px;
+  }
+  .transcript-box {
+    min-height: 140px;
+    color: var(--text-primary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+  .status-box { min-height: 100px; }
+
+  /* Right panel fields */
+  .field-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin: 18px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .patient-line { font-size: 14px; margin: 2px 0; }
+  .summary-box {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    min-height: 70px;
+    color: var(--text-primary);
+  }
+  .placeholder { color: #9ca3af; text-align: center; padding: 14px 0; font-size: 13px; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    background: #eef2ff;
+    color: var(--accent-dark);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  /* ------------------------------------------------------------------- */
+  /* Responsive breakpoints                                              */
+  /* ------------------------------------------------------------------- */
+
+  /* Tablets / narrow windows: stack the two panels instead of squeezing */
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    body {
+      padding: 16px;
+    }
+  }
+
+  /* Phones: full-width stacked buttons, wrapping pills, smaller headings */
+  @media (max-width: 480px) {
+    body {
+      padding: 12px;
+    }
+    .panel {
+      padding: 16px;
+    }
+    .panel h2 {
+      font-size: 15px;
+    }
+    .btn-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    button {
+      justify-content: center;
+      width: 100%;
+    }
+    .stat-row {
+      flex-wrap: wrap;
+    }
+    .panel-header {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .patient-line {
+      font-size: 13px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- LEFT: Live transcription -->
+  <div class="panel">
+    <h2>🎙️ Live Medical Transcription</h2>
+
+    <div class="btn-row">
+      <button id="startBtn" class="btn-mic">▶ Start Mic</button>
+      <button id="stopBtn" class="btn-stop" disabled>■ Stop</button>
+      <button id="clearBtn" class="btn-clear">🗑 Clear</button>
+      <button id="saveBtn" class="btn-save" disabled>⬇ Save Recording</button>
+    </div>
+
+    <div class="stat-row">
+      <span class="stat-pill" id="wordCount">📝 Words: 0</span>
+      <span class="stat-pill" id="chunkCount">🔄 Chunks: 0</span>
+    </div>
+
+    <div class="box transcript-box" id="transcriptBox"></div>
+
+    <div class="box status-box" id="statusBox">
+      Ready — click Start Mic and speak naturally. VAD will auto-chunk your speech.
+    </div>
+
+    <button id="processBtn" class="btn-process" disabled>⚡ Process Transcript with AI</button>
+  </div>
+
+  <!-- RIGHT: AI summary -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>⏳ AI Medical Summary</h2>
+      <button id="summaryClearBtn" class="btn-outline">✕ Clear</button>
+    </div>
+
+    <div class="patient-line"><strong>Patient Name:</strong> <span id="patientName">—</span></div>
+    <div class="patient-line"><strong>Age:</strong> <span id="patientAge">—</span> &nbsp; <strong>Gender:</strong> <span id="patientGender">—</span></div>
+
+    <div class="field-label">📋 Clinical summary</div>
+    <div class="summary-box" id="clinicalSummary">
+      <span class="placeholder" style="text-align:left;padding:0;">AI-generated clinical summary will appear here…</span>
+    </div>
+
+    <div class="field-label">💬 Chief complaints</div>
+    <div id="chiefComplaints"><div class="placeholder">No complaints extracted yet</div></div>
+
+    <div class="field-label">🩺 Symptoms</div>
+    <div id="symptoms"><div class="placeholder">No symptoms extracted yet</div></div>
+
+    <div class="field-label">🧬 Clinical impression</div>
+    <div id="clinicalImpression"><div class="placeholder">No diagnosis inferred</div></div>
+  </div>
+
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
+const WS_URL = "ws://localhost:8000/ws/transcribe";
+const ANALYZE_URL = "http://localhost:8000/api/analyze";
+
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+let fullTranscript = "";
+let chunkCount = 0;
+
+// ---------------------------------------------------------------------------
+// Elements
+// ---------------------------------------------------------------------------
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const clearBtn = document.getElementById("clearBtn");
+const saveBtn = document.getElementById("saveBtn");
+const processBtn = document.getElementById("processBtn");
+const transcriptBox = document.getElementById("transcriptBox");
+const statusBox = document.getElementById("statusBox");
+const wordCountEl = document.getElementById("wordCount");
+const chunkCountEl = document.getElementById("chunkCount");
+
+// ---------------------------------------------------------------------------
+// UI helpers
+// ---------------------------------------------------------------------------
+function setStatus(text) {
+  statusBox.textContent = text;
+}
+
+function updateCounts() {
+  const words = fullTranscript.trim().split(/\s+/).filter(Boolean).length;
+  wordCountEl.textContent = `📝 Words: ${words}`;
+  chunkCountEl.textContent = `🔄 Chunks: ${chunkCount}`;
+}
+
+function appendTranscript(text) {
+  fullTranscript += (fullTranscript ? " " : "") + text;
+  transcriptBox.textContent = fullTranscript;
+  chunkCount++;
+  updateCounts();
+  processBtn.disabled = fullTranscript.trim().length === 0;
+}
+
+const saveBtnEl = document.getElementById("saveBtn");
+const processBtnEl = document.getElementById("processBtn");
+const summaryClearBtn = document.getElementById("summaryClearBtn");
+
+const patientNameEl = document.getElementById("patientName");
+const patientAgeEl = document.getElementById("patientAge");
+const patientGenderEl = document.getElementById("patientGender");
+const clinicalSummaryEl = document.getElementById("clinicalSummary");
+const chiefComplaintsEl = document.getElementById("chiefComplaints");
+const symptomsEl = document.getElementById("symptoms");
+const clinicalImpressionEl = document.getElementById("clinicalImpression");
+
+// ---------------------------------------------------------------------------
+// Mic / VAD / WebSocket state
+// ---------------------------------------------------------------------------
+let mediaStream = null;
+let mediaRecorder = null;
+let audioContext = null;
+let analyser = null;
+let vadRafId = null;
+let ws = null;
+
+let currentChunkParts = [];   // MediaRecorder dataavailable parts for the in-progress chunk
+let allRecordedBlobs = [];    // every finalized chunk, kept for "Save Recording"
+let isSpeaking = false;
+let silenceStartedAt = null;
+
+const SILENCE_THRESHOLD = 0.02;   // RMS amplitude below this = silence
+const SILENCE_DURATION_MS = 700;  // how long silence must persist to end a chunk
+const MIN_CHUNK_MS = 400;         // ignore chunks shorter than this (noise blips)
+let chunkStartedAt = null;
+
+// ---------------------------------------------------------------------------
+// 1 & 2. Start mic + VAD auto-chunking
+// ---------------------------------------------------------------------------
+async function startMic() {
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (err) {
+    setStatus("Could not access microphone: " + err.message);
+    return;
+  }
+
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
+  setStatus("Listening — speak naturally. Pauses will auto-chunk your speech.");
+
+  connectWebSocket();
+
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const source = audioContext.createMediaStreamSource(mediaStream);
+  analyser = audioContext.createAnalyser();
+  analyser.fftSize = 2048;
+  source.connect(analyser);
+
+  startNewRecorderSegment();
+  runVadLoop();
+}
+
+function startNewRecorderSegment() {
+  currentChunkParts = [];
+  chunkStartedAt = Date.now();
+  mediaRecorder = new MediaRecorder(mediaStream, { mimeType: "audio/webm;codecs=opus" });
+
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data && e.data.size > 0) currentChunkParts.push(e.data);
+  };
+
+  mediaRecorder.start();
+}
+
+function runVadLoop() {
+  const buffer = new Uint8Array(analyser.fftSize);
+
+  function tick() {
+    analyser.getByteTimeDomainData(buffer);
+
+    // RMS amplitude of the current audio frame (0 = silence, ~1 = loud)
+    let sumSquares = 0;
+    for (let i = 0; i < buffer.length; i++) {
+      const normalized = (buffer[i] - 128) / 128;
+      sumSquares += normalized * normalized;
+    }
+    const rms = Math.sqrt(sumSquares / buffer.length);
+
+    if (rms > SILENCE_THRESHOLD) {
+      isSpeaking = true;
+      silenceStartedAt = null;
+    } else if (isSpeaking) {
+      if (silenceStartedAt === null) silenceStartedAt = Date.now();
+      const silenceElapsed = Date.now() - silenceStartedAt;
+      const chunkElapsed = Date.now() - chunkStartedAt;
+
+      if (silenceElapsed >= SILENCE_DURATION_MS && chunkElapsed >= MIN_CHUNK_MS) {
+        finalizeChunk();
+        isSpeaking = false;
+        silenceStartedAt = null;
+      }
+    }
+
+    vadRafId = requestAnimationFrame(tick);
+  }
+
+  tick();
+}
+
+function finalizeChunk() {
+  if (!mediaRecorder || mediaRecorder.state !== "recording") return;
+
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(currentChunkParts, { type: "audio/webm" });
+    if (blob.size > 0) {
+      allRecordedBlobs.push(blob);
+      sendChunkToServer(blob);
+      saveBtn.disabled = false;
+    }
+    // Immediately start the next segment so we don't miss speech
+    if (mediaStream && mediaStream.active) startNewRecorderSegment();
+  };
+
+  mediaRecorder.stop();
+}
+
+// ---------------------------------------------------------------------------
+// 3. WebSocket streaming
+// ---------------------------------------------------------------------------
+function connectWebSocket() {
+  ws = new WebSocket(WS_URL);
+
+  ws.onopen = () => console.log("WebSocket connected");
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.text) {
+        appendTranscript(data.text);
+        setStatus("Listening — speak naturally. Pauses will auto-chunk your speech.");
+      }
+    } catch (err) {
+      console.error("Bad message from server:", event.data);
+    }
+  };
+
+  ws.onerror = () => setStatus("WebSocket error — is the backend running on localhost:8000?");
+
+  ws.onclose = () => console.log("WebSocket closed");
+}
+
+function sendChunkToServer(blob) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    setStatus("Transcribing last chunk...");
+    blob.arrayBuffer().then((buf) => ws.send(buf));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 4. Stop button
+// ---------------------------------------------------------------------------
+function stopMic() {
+  if (vadRafId) cancelAnimationFrame(vadRafId);
+  vadRafId = null;
+
+  // Flush whatever's currently being recorded as a final chunk
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(currentChunkParts, { type: "audio/webm" });
+      if (blob.size > 0) {
+        allRecordedBlobs.push(blob);
+        sendChunkToServer(blob);
+        saveBtn.disabled = false;
+      }
+    };
+    mediaRecorder.stop();
+  }
+
+  if (mediaStream) {
+    mediaStream.getTracks().forEach((t) => t.stop());
+    mediaStream = null;
+  }
+  if (audioContext) {
+    audioContext.close();
+    audioContext = null;
+  }
+  if (ws) {
+    ws.close();
+    ws = null;
+  }
+
+  isSpeaking = false;
+  silenceStartedAt = null;
+
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+  setStatus("Stopped. Click Start Mic to resume, or Process Transcript with AI when ready.");
+}
+
+// ---------------------------------------------------------------------------
+// 5. Clear button
+// ---------------------------------------------------------------------------
+function clearAll() {
+  fullTranscript = "";
+  chunkCount = 0;
+  allRecordedBlobs = [];
+  transcriptBox.textContent = "";
+  updateCounts();
+  setStatus("Ready — click Start Mic and speak naturally. VAD will auto-chunk your speech.");
+  processBtn.disabled = true;
+  saveBtn.disabled = true;
+}
+
+// ---------------------------------------------------------------------------
+// 6. Save Recording
+// ---------------------------------------------------------------------------
+function saveRecording() {
+  if (allRecordedBlobs.length === 0) return;
+  const fullBlob = new Blob(allRecordedBlobs, { type: "audio/webm" });
+  const url = URL.createObjectURL(fullBlob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `recording-${Date.now()}.webm`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ---------------------------------------------------------------------------
+// 7. Process Transcript with AI
+// ---------------------------------------------------------------------------
+async function processTranscript() {
+  const transcript = fullTranscript.trim();
+  if (!transcript) return;
+
+  processBtn.disabled = true;
+  processBtn.textContent = "⏳ Analyzing...";
+
+  try {
+    const res = await fetch(ANALYZE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transcript }),
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      setStatus("AI analysis error: " + data.error);
+      return;
+    }
+
+    renderSummary(data);
+    setStatus("Summary generated.");
+  } catch (err) {
+    setStatus("Could not reach the backend at " + ANALYZE_URL + ". Is it running?");
+  } finally {
+    processBtn.disabled = false;
+    processBtn.textContent = "⚡ Process Transcript with AI";
+  }
+}
+
+function renderSummary(data) {
+  patientNameEl.textContent = data.patient_name || "—";
+  patientAgeEl.textContent = data.age || "—";
+  patientGenderEl.textContent = data.gender || "—";
+
+  clinicalSummaryEl.innerHTML = data.clinical_summary
+    ? data.clinical_summary
+    : '<span class="placeholder" style="text-align:left;padding:0;">AI-generated clinical summary will appear here…</span>';
+
+  chiefComplaintsEl.innerHTML = renderTags(data.chief_complaints, "No complaints extracted yet");
+  symptomsEl.innerHTML = renderTags(data.symptoms, "No symptoms extracted yet");
+
+  clinicalImpressionEl.innerHTML = data.clinical_impression
+    ? `<div class="summary-box">${data.clinical_impression}</div>`
+    : '<div class="placeholder">No diagnosis inferred</div>';
+}
+
+function renderTags(items, emptyText) {
+  if (!items || items.length === 0) {
+    return `<div class="placeholder">${emptyText}</div>`;
+  }
+  const tags = items.map((item) => `<span class="tag">${item}</span>`).join("");
+  return `<div class="tag-list">${tags}</div>`;
+}
+
+// ---------------------------------------------------------------------------
+// 8. Summary Clear button
+// ---------------------------------------------------------------------------
+function clearSummary() {
+  renderSummary({});
+}
+
+// ---------------------------------------------------------------------------
+// Wire up events
+// ---------------------------------------------------------------------------
+startBtn.addEventListener("click", startMic);
+stopBtn.addEventListener("click", stopMic);
+clearBtn.addEventListener("click", clearAll);
+saveBtn.addEventListener("click", saveRecording);
+processBtn.addEventListener("click", processTranscript);
+summaryClearBtn.addEventListener("click", clearSummary);
+</script>
+
+</body>
+</html>
