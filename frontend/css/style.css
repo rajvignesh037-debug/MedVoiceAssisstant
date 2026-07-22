@@ -1,0 +1,266 @@
+/* frontend/css/style.css
+   Global stylesheet for MedVoice live transcription interface.
+   Keeps layout, button styles, panel visuals, and responsive breakpoints.
+*/
+:root {
+  --accent: #6366f1;
+  --accent-dark: #4f46e5;
+  --red: #ef4444;
+  --green: #16a34a;
+  --border: #e5e7eb;
+  --bg-soft: #f9fafb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f3f4f6;
+  color: var(--text-primary);
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.panel h2 {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--accent-dark);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+button {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-mic {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-mic:hover:not(:disabled) {
+  background: var(--accent-dark);
+}
+
+.btn-stop {
+  background: #fff;
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.btn-clear,
+.btn-save,
+.btn-outline {
+  background: #fff;
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+
+.btn-save {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.btn-outline {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+.btn-process {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  padding: 12px;
+  font-size: 14px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.btn-process:hover:not(:disabled) {
+  background: var(--accent-dark);
+}
+
+.stat-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.stat-pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.box {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-height: 60px;
+  margin-bottom: 12px;
+}
+
+.transcript-box {
+  min-height: 140px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.status-box {
+  min-height: 100px;
+}
+
+.field-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin: 18px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.patient-line {
+  font-size: 14px;
+  margin: 2px 0;
+}
+
+.summary-box {
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  min-height: 70px;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.placeholder {
+  color: #9ca3af;
+  text-align: center;
+  padding: 14px 0;
+  font-size: 13px;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  background: #eef2ff;
+  color: var(--accent-dark);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  body {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .panel h2 {
+    font-size: 15px;
+  }
+
+  .btn-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  button {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .stat-row {
+    flex-wrap: wrap;
+  }
+
+  .panel-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .patient-line {
+    font-size: 13px;
+  }
+}
