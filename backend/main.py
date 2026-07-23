@@ -2,7 +2,7 @@
 MedVoice backend
 - WebSocket endpoint: receives short audio chunks (already VAD-segmented on the
   client), transcribes each via the OpenAI Whisper cloud API, streams text back.
-- REST endpoint: takes the full transcript and asks Claude to extract a
+- REST endpoint: takes the full transcript and asks GPT to extract a
   structured clinical summary (patient info, complaints, symptoms, impression).
 
 Run with:  uvicorn main:app --reload --port 8000
