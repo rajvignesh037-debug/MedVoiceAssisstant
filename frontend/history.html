@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedVoice — History</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Shown if there's no valid token — no dedicated login page to redirect to,
+       so just point the user back at index.html -->
+  <section id="noAuthScreen" class="auth-screen" style="display:none;">
+    <div class="auth-card">
+      <h1 class="auth-title">🎙️ MedVoice</h1>
+      <p class="auth-subtitle">You need to be logged in to view history.</p>
+      <a href="index.html" class="btn-auth-submit" style="display:flex; justify-content:center; text-decoration:none;">Go to Log In</a>
+    </div>
+  </section>
+
+  <!-- Shown once a token is present -->
+  <div id="historyScreen" class="app-screen" style="display:none;">
+    <header class="app-header">
+      <span class="app-header-title">🎙️ MedVoice — History</span>
+      <div class="app-header-right">
+        <span id="userEmailLabel" class="app-header-email"></span>
+        <a href="index.html" class="btn-outline">← Back to App</a>
+        <button id="logoutBtn" class="btn-outline">Log Out</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel" aria-labelledby="records-title">
+        <header class="panel-header">
+          <h2 id="records-title">📜 Past Records</h2>
+        </header>
+        <div id="recordsList" class="record-list">
+          <div class="placeholder">Loading records…</div>
+        </div>
+      </section>
+
+      <aside class="panel" aria-labelledby="detail-title">
+        <header class="panel-header">
+          <h2 id="detail-title">🩺 Record Detail</h2>
+        </header>
+
+        <div id="detailEmpty" class="placeholder">Select a record from the list to see its details.</div>
+
+        <div id="detailContent" style="display:none;">
+          <div class="patient-line"><strong>Patient Name:</strong> <span id="detailPatientName">—</span></div>
+          <div class="patient-line"><strong>Age:</strong> <span id="detailAge">—</span> &nbsp; <strong>Gender:</strong> <span id="detailGender">—</span></div>
+
+          <div class="field-label">📋 Clinical summary</div>
+          <div class="summary-box" id="detailClinicalSummary"></div>
+
+          <div class="field-label">💬 Chief complaints</div>
+          <div id="detailChiefComplaints"></div>
+
+          <div class="field-label">🩺 Symptoms</div>
+          <div id="detailSymptoms"></div>
+
+          <div class="field-label">🧬 Clinical impression</div>
+          <div id="detailClinicalImpression"></div>
+
+          <button id="deleteRecordBtn" class="btn-clear" style="margin-top:18px; width:100%; justify-content:center; color:var(--red); border-color:var(--red);">
+            🗑 Delete This Record
+          </button>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script type="module" src="js/history.js"></script>
+</body>
+</html>

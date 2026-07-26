@@ -7,7 +7,46 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <main class="layout">
+
+  <!-- AUTH SCREEN: shown when no valid token exists -->
+  <section id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <h1 class="auth-title">🎙️ MedVoice</h1>
+      <p class="auth-subtitle">Live medical transcription &amp; AI summaries</p>
+
+      <div class="auth-tabs">
+        <button id="loginTabBtn" class="auth-tab active" type="button">Log In</button>
+        <button id="signupTabBtn" class="auth-tab" type="button">Sign Up</button>
+      </div>
+
+      <form id="loginForm" class="auth-form">
+        <input type="email" id="loginEmail" placeholder="Email" required autocomplete="email" />
+        <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password" />
+        <button type="submit" class="btn-auth-submit">Log In</button>
+        <div class="auth-error" id="loginError"></div>
+      </form>
+
+      <form id="signupForm" class="auth-form" style="display:none;">
+        <input type="email" id="signupEmail" placeholder="Email" required autocomplete="email" />
+        <input type="password" id="signupPassword" placeholder="Password (min 8 characters)" required autocomplete="new-password" />
+        <button type="submit" class="btn-auth-submit">Sign Up</button>
+        <div class="auth-error" id="signupError"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- APP SCREEN: shown once a valid token exists -->
+  <div id="appScreen" class="app-screen">
+    <header class="app-header">
+      <span class="app-header-title">🎙️ MedVoice</span>
+      <div class="app-header-right">
+        <span id="userEmailLabel" class="app-header-email"></span>
+        <a href="history.html" class="btn-outline">📜 History</a>
+        <button id="logoutBtn" class="btn-outline">Log Out</button>
+      </div>
+    </header>
+
+    <main class="layout">
     <section class="panel" aria-labelledby="transcription-title">
       <header>
         <h2 id="transcription-title">🎙️ Live Medical Transcription</h2>
@@ -57,6 +96,7 @@
       <div id="clinicalImpression"><div class="placeholder">No diagnosis inferred</div></div>
     </aside>
   </main>
+  </div>
 
   <script type="module" src="js/app.js"></script>
 </body>
